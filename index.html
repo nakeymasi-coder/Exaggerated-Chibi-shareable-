@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Exaggerated Chibi Generator V12.2</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121933; --panel2:#182246; --text:#f5f7ff; --muted:#b7c0e3;
+    --line:rgba(255,255,255,.12); --gold:#f59e0b; --blue:#4f46e5; --pink:#ec4899; --green:#22c55e; --danger:#ef4444;
+    --shadow:0 18px 48px rgba(0,0,0,.28); --radius:22px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:20px;color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(79,70,229,.25), transparent 26%),
+      radial-gradient(circle at top right, rgba(236,72,153,.15), transparent 22%),
+      linear-gradient(180deg,#0a0f1d,#11182d 50%,#0a0f1d);
+  }
+  .app{max-width:1540px;margin:0 auto}
+  .hero{
+    background:linear-gradient(135deg, rgba(79,70,229,.28), rgba(245,158,11,.16), rgba(236,72,153,.18));
+    border:1px solid var(--line); border-radius:30px; padding:24px; box-shadow:var(--shadow); margin-bottom:20px;
+  }
+  h1{margin:0 0 8px;font-size:clamp(2rem,4vw,3rem)}
+  .sub{margin:0;color:var(--muted);max-width:1050px}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{padding:18px 18px 0;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .panel-head h2{margin:0;font-size:1.08rem}
+  .panel-body{padding:18px}
+  .small{font-size:.82rem;color:var(--muted)}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-right:10px;margin-top:10px}
+  .presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .preset{
+    border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;border-radius:16px;padding:14px;text-align:left;cursor:pointer;
+    min-height:110px;
+  }
+  .preset.active{outline:2px solid rgba(245,158,11,.7)}
+  .preset strong{display:block;font-size:.95rem;margin-bottom:5px}
+  .preset span{font-size:.82rem;color:var(--muted)}
+  .section-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:16px}
+  .card{background:linear-gradient(180deg, rgba(24,34,70,.92), rgba(17,24,39,.88));border:1px solid var(--line);border-radius:20px;padding:16px}
+  .card h3{margin:0 0 12px;font-size:1rem}
+  .fields{display:grid;gap:12px}
+  .field{display:grid;gap:8px}
+  label{font-size:.88rem;color:#dbe4ff;font-weight:700}
+  select,input,textarea,button{font:inherit}
+  select,input,textarea{
+    width:100%;background:#0f1731;color:#fff;border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;padding:12px 13px;outline:none;
+  }
+  select[multiple]{min-height:110px}
+  textarea{min-height:130px;resize:vertical;line-height:1.5}
+  .mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .tools{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    border:none;border-radius:14px;padding:12px 16px;cursor:pointer;color:#fff;
+    background:linear-gradient(135deg,var(--blue),#6d28d9);box-shadow:0 10px 20px rgba(79,70,229,.28)
+  }
+  button.alt{background:linear-gradient(135deg,#243057,#1b2545);box-shadow:none;border:1px solid var(--line)}
+  button.gold{background:linear-gradient(135deg,#f59e0b,#fb7185)}
+  button.green{background:linear-gradient(135deg,#16a34a,#14b8a6)}
+  button.red{background:linear-gradient(135deg,#dc2626,#f43f5e)}
+  .tabs{display:flex;gap:10px;flex-wrap:wrap}
+  .tab-btn.active{outline:2px solid rgba(245,158,11,.55)}
+  .output{
+    width:100%; min-height:280px; resize:vertical; background:#0b1227;border:1px solid var(--line);border-radius:18px;padding:16px;
+    color:var(--text); line-height:1.55; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  .status{padding:10px 12px;border-radius:12px;font-size:.85rem}
+  .ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#dcfce7}
+  .warn{background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.25);color:#fef3c7}
+  .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fee2e2}
+  @media (max-width:1150px){.grid{grid-template-columns:1fr}}
+  @media (max-width:900px){.presets,.section-grid,.mini-grid{grid-template-columns:1fr} body{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <h1>Exaggerated Chibi Generator V12.2</h1>
+</section>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Reference-Based Presets</h2>
+        <div class="small">Pick one. Each one loads a different style family instead of remixing the same template.</div>
+      </div>
+      <div class="panel-body">
+        <div class="presets" id="presetGrid"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Generator Tools</h2>
+        <div class="tools">
+          <button type="button" id="generateBtn" class="gold">Generate</button>
+          <button type="button" id="randomPresetBtn" class="green">Random Preset</button>
+          <button type="button" id="clearBtn" class="red">Clear</button>
+          <button type="button" id="copyBtn" class="alt">Copy Visible Prompt</button>
+          <button type="button" id="downloadBtn" class="alt">Download TXT</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="mini-grid">
+          <div class="field">
+            <label for="mode">Output Mode</label>
+            <select id="mode">
+              <option value="both">Both Photo + Video</option>
+              <option value="photo">Photo Prompt Only</option>
+              <option value="video">Video Script Prompt Only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sceneType">Scene Type</label>
+            <select id="sceneType">
+              <option value="solo">Solo</option>
+              <option value="duo">Duo</option>
+              <option value="trio">Trio</option>
+              <option value="family">Family</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="statusMsg">Status</label>
+          <div id="statusMsg" class="status ok">Ready.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:20px">
+    <div class="panel-head">
+      <h2>Manual Tweaks</h2>
+      <div class="small">These are secondary overrides. The preset still controls the main style DNA.</div>
+    </div>
+    <div class="panel-body">
+      <div class="section-grid">
+        <div class="card">
+          <h3>Character</h3>
+          <div class="fields">
+            <div class="mini-grid">
+              <div class="field">
+                <label for="ageGroup">Age Group</label>
+                <select id="ageGroup">
+                  <option value="">Leave preset</option>
+                  <option>toddler</option>
+                  <option>child</option>
+                  <option>teen</option>
+                  <option>young adult</option>
+                  <option>adult</option>
+                  <option>elder</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="gender">Gender</label>
+                <select id="gender">
+                  <option value="">Leave preset</option>
+                  <option>girl</option>
+                  <option>woman</option>
+                  <option>boy</option>
+                  <option>man</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="skinTone">Skin Tone</label>
+              <select id="skinTone">
+                <option value="">Leave preset</option>
+                <option>caramel brown</option>
+                <option>deep warm brown</option>
+                <option>golden brown</option>
+                <option>mahogany brown</option>
+                <option>medium brown</option>
+                <option>mocha brown</option>
+                <option>warm brown</option>
+              </select>
+            </div>
+            <div class="mini-grid">
+              <div class="field">
+                <label for="eyeColor">Eye Color</label>
+                <select id="eyeColor">
+                  <option value="">Leave preset</option>
+                  <option>amber</option>
+                  <option>brown</option>
+                  <option>golden brown</option>
+                  <option>purple</option>
+                  <option>teal</option>
+                  <option>violet</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="expression">Expression</label>
+                <select id="expression">
+                  <option value="">Leave preset</option>
+                  <option>calm confidence</option>
+                  <option>cute pout</option>
+                  <option>joyful smile</option>
+                  <option>peaceful prayerful</option>
+                  <option>playful smile</option>
+                  <option>serious stare</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Hair + Outfit</h3>
+          <div class="fields">
+            <div class="field">
+              <label for="hairStyle">Hair Style</label>
+              <select id="hairStyle">
+                <option value="">Leave preset</option>
+                <option>afro puff ponytails</option>
+                <option>beaded braids</option>
+                <option>braided top bun</option>
+                <option>bubble ponytails</option>
+                <option>long sleek hair</option>
+                <option>soft glam curls</option>
+                <option>voluminous rope curls</option>
+              </select>
+            </div>
+            <div class="mini-grid">
+              <div class="field">
+                <label for="hairAccessory">Hair Accessory</label>
+                <select id="hairAccessory">
+                  <option value="">Leave preset</option>
+                  <option>giant bow</option>
+                  <option>heart accessories</option>
+                  <option>jeweled headband</option>
+                  <option>none</option>
+                  <option>purple bows</option>
+                  <option>rainbow bows</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="outfitOverride">Outfit Override</label>
+                <select id="outfitOverride">
+                  <option value="">Leave preset</option>
+                  <option>casual cute outfit</option>
+                  <option>faith glam outfit</option>
+                  <option>monochrome sporty set</option>
+                  <option>sparkly glam dress</option>
+                  <option>sporty streetwear</option>
+                </select>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <div class="field">
+                <label for="shoesOverride">Shoes Override</label>
+                <select id="shoesOverride">
+                  <option value="">Leave preset</option>
+                  <option>glam heels</option>
+                  <option>slides</option>
+                  <option>sneakers</option>
+                  <option>sporty high-tops</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="accessoryGuard">Accessory Guard</label>
+                <select id="accessoryGuard">
+                  <option value="preset">Leave preset logic</option>
+                  <option value="no-purse">Force no purse</option>
+                  <option value="no-sunglasses">Force no sunglasses</option>
+                  <option value="no-both">Force no purse or sunglasses</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Scene + Props</h3>
+          <div class="fields">
+            <div class="field">
+              <label for="sceneOverride">Scene Override</label>
+              <select id="sceneOverride">
+                <option value="">Leave preset</option>
+                <option>autumn porch</option>
+                <option>boardwalk</option>
+                <option>bougie bedroom</option>
+                <option>cafe patio</option>
+                <option>candy room</option>
+                <option>city sunset skyline</option>
+                <option>clean white studio</option>
+                <option>heavenly blue background</option>
+                <option>prayer room interior</option>
+              </select>
+            </div>
+            <div class="mini-grid">
+              <div class="field">
+                <label for="propOverride">Main Prop</label>
+                <select id="propOverride">
+                  <option value="">Leave preset</option>
+                  <option>Bible</option>
+                  <option>coffee cup and newspaper</option>
+                  <option>orange soda can</option>
+                  <option>pink drink</option>
+                  <option>rainbow lollipop</option>
+                  <option>sour candy bag</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="effectLevel">Effects</label>
+                <select id="effectLevel">
+                  <option value="preset">Leave preset logic</option>
+                  <option value="none">No glitter / no sparkle</option>
+                  <option value="soft">Soft sparkle only</option>
+                  <option value="bold">Bold sparkle</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="relationshipNote">Relationship Note</label>
+              <input id="relationshipNote" placeholder="Example: grandmother and child, two sisters, mom and two kids" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Extra Notes</h3>
+          <div class="fields">
+            <div class="field">
+              <label for="customNotes">Custom Notes</label>
+              <textarea id="customNotes" placeholder="Add anything extra you want, like exact shirt text, no logos, more melanin glow, full-body framing, no background clutter, etc."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid" style="margin-top:20px">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Generated Prompts</h2>
+        <div class="tabs">
+          <button type="button" id="photoTabBtn" class="tab-btn alt active">Photo Prompt</button>
+          <button type="button" id="videoTabBtn" class="tab-btn alt">Video Script Prompt</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="small" style="margin-bottom:10px">The visible prompt is exactly what gets copied.</div>
+        <textarea id="photoOutput" class="output" readonly spellcheck="false"></textarea>
+        <textarea id="videoOutput" class="output" readonly spellcheck="false" style="display:none"></textarea>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Notes</h2>
+      </div>
+      <div class="panel-body">
+        <textarea class="output" readonly spellcheck="false">Pick a preset, generate, and copy the prompt you want to use.</textarea>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const PRESETS = [
+  {
+    id:"orange-snack",
+    title:"Orange Snack Doll",
+    desc:"Orange sporty doll with soda + snack bag",
+    dna:{
+      sceneType:"solo", ageGroup:"teen", gender:"girl", skinTone:"warm brown", eyeColor:"amber", expression:"soft glam smile",
+      hairStyle:"bubble ponytails", hairAccessory:"giant bow",
+      palette:"orange crush", outfit:"bright orange sporty two-piece tracksuit", shoes:"orange-and-white sporty sneakers",
+      prop:"orange soda can", scene:"clean white studio", accent:"gold hoop earrings and layered dainty chains",
+      extras:"large orange snack bag beside her, centered composition, seated crossed-leg pose, no purse, no sunglasses, no glitter, no feathers"
+    }
+  },
+  {
+    id:"pink-candy",
+    title:"Pink Candy Heart",
+    desc:"Candycore girl with hearts + lollipop",
+    dna:{
+      sceneType:"solo", ageGroup:"child", gender:"girl", skinTone:"deep warm brown", eyeColor:"brown", expression:"playful smile",
+      hairStyle:"beaded braids", hairAccessory:"heart accessories",
+      palette:"pink candy", outfit:"pink cardigan, white crop top, and blue jeans", shoes:"none visible",
+      prop:"rainbow lollipop", scene:"clean white studio", accent:"pink heart sunglasses and pink hoops",
+      extras:"floating pink hearts, sticker-style cutout feeling, candy bead accents, no purse, soft sparkle only if selected"
+    }
+  },
+  {
+    id:"keep-going",
+    title:"Keep Going Skyline",
+    desc:"Motivational doll with butterflies + skyline",
+    dna:{
+      sceneType:"solo", ageGroup:"child", gender:"girl", skinTone:"deep warm brown", eyeColor:"teal", expression:"calm confidence",
+      hairStyle:"soft glam curls", hairAccessory:"giant bow",
+      palette:"sunset pink teal", outfit:"black KEEP GOING shirt and floral skirt", shoes:"none visible",
+      prop:"none", scene:"city sunset skyline", accent:"pink heart earrings",
+      extras:"butterflies, sunset sky, flowers in foreground, no purse, no sunglasses, no glitter unless selected"
+    }
+  },
+  {
+    id:"let-go",
+    title:"Let Go Let God",
+    desc:"Faith boardwalk glam look",
+    dna:{
+      sceneType:"solo", ageGroup:"teen", gender:"girl", skinTone:"medium brown", eyeColor:"brown", expression:"calm confidence",
+      hairStyle:"soft glam curls", hairAccessory:"none",
+      palette:"black gold pink", outfit:"black cropped LET GO LET GOD sweatshirt and fitted black pants with gold side stripe", shoes:"gold sneakers",
+      prop:"none", scene:"boardwalk", accent:"gold jewelry",
+      extras:"confident walking pose, ferris wheel and tulips in the background, no purse, no sunglasses, no glitter unless selected"
+    }
+  },
+  {
+    id:"twin-keep-going",
+    title:"Twin Keep Going",
+    desc:"Duo skyline set with teal + pink bows",
+    dna:{
+      sceneType:"duo", ageGroup:"child", gender:"girl", skinTone:"deep warm brown", eyeColor:"teal", expression:"joyful smile",
+      hairStyle:"long sleek hair", hairAccessory:"giant bow",
+      palette:"teal pink sunset", outfit:"matching black KEEP GOING shirts and butterfly floral leggings", shoes:"cute sneakers",
+      prop:"none", scene:"city sunset skyline", accent:"one teal bow, one pink bow, gold chains, heart earrings",
+      extras:"two distinct girls, butterflies, tulips, no purse, no sunglasses, no feathers"
+    }
+  },
+  {
+    id:"sour-kids",
+    title:"Sour Candy Duo",
+    desc:"Girl + boy with candy bag",
+    dna:{
+      sceneType:"duo", ageGroup:"child", gender:"duo mixed", skinTone:"warm brown", eyeColor:"brown", expression:"cute pout",
+      hairStyle:"afro puff ponytails", hairAccessory:"rainbow bows",
+      palette:"rainbow candy", outfit:"girl in white tee and pink skirt, boy in white tee and black joggers", shoes:"sporty sneakers",
+      prop:"sour candy bag", scene:"clean white studio", accent:"small gummy candy characters",
+      extras:"duo scene, one girl and one boy, clean white studio, gummy candy props, no purse, no sunglasses, no glitter"
+    }
+  },
+  {
+    id:"baby-ceo",
+    title:"Baby CEO",
+    desc:"Toddler portrait with coffee + newspaper",
+    dna:{
+      sceneType:"solo", ageGroup:"toddler", gender:"boy", skinTone:"deep warm brown", eyeColor:"brown", expression:"serious stare",
+      hairStyle:"soft curly hair", hairAccessory:"none",
+      palette:"beige mocha", outfit:"beige suit jacket, white shirt, and tie", shoes:"not visible",
+      prop:"coffee cup and newspaper", scene:"clean white studio", accent:"soft portrait styling",
+      extras:"mini executive mood, seated portrait crop, no purse, no sunglasses, no glitter"
+    }
+  },
+  {
+    id:"prayer-bills",
+    title:"Prayer Bills Scene",
+    desc:"Emotional kneeling prayer scene",
+    dna:{
+      sceneType:"solo", ageGroup:"teen", gender:"girl", skinTone:"warm brown", eyeColor:"brown", expression:"peaceful prayerful",
+      hairStyle:"dramatic side-shaved glam style", hairAccessory:"none",
+      palette:"lavender gray", outfit:"lavender long-sleeve top and distressed jeans", shoes:"barefoot or not visible",
+      prop:"overdue bills on floor", scene:"prayer room interior", accent:"small medicine bottle nearby",
+      extras:"kneeling prayer pose, couch in background, tears on face, no purse, no sunglasses, no glitter"
+    }
+  },
+  {
+    id:"grandma-prayer",
+    title:"Grandma + Child Prayer",
+    desc:"Luxury faith family portrait",
+    dna:{
+      sceneType:"family", ageGroup:"mixed generations", gender:"grandmother and girl", skinTone:"warm brown", eyeColor:"brown", expression:"peaceful prayerful",
+      hairStyle:"braided top bun", hairAccessory:"none",
+      palette:"black gold candlelight", outfit:"matching black and gold lounge outfits", shoes:"gold slides",
+      prop:"none", scene:"bougie bedroom", accent:"grandmother with silver curls and glasses",
+      extras:"bed scene, candlelight, hands clasped in prayer, no purse, no sunglasses, no glitter"
+    }
+  },
+  {
+    id:"god-got-me",
+    title:"God Got Me",
+    desc:"Child held in protective hands",
+    dna:{
+      sceneType:"solo", ageGroup:"child", gender:"girl", skinTone:"deep warm brown", eyeColor:"brown", expression:"joyful smile",
+      hairStyle:"braided top bun", hairAccessory:"none",
+      palette:"heavenly blue white", outfit:"gray hoodie that reads GOD GOT ME and blue jeans", shoes:"not visible",
+      prop:"protective hands", scene:"heavenly blue background", accent:"angel wings behind her",
+      extras:"cross-legged pose, divine light rays, centered spiritual composition, no purse, no sunglasses, no glitter unless selected"
+    }
+  },
+  {
+    id:"purple-porch",
+    title:"Purple Porch Glam",
+    desc:"Monochrome purple porch baddie",
+    dna:{
+      sceneType:"solo", ageGroup:"young adult", gender:"woman", skinTone:"golden brown", eyeColor:"purple", expression:"calm confidence",
+      hairStyle:"voluminous rope curls", hairAccessory:"purple bows",
+      palette:"purple luxe", outfit:"sparkly purple hoodie and matching purple track pants", shoes:"purple-and-white sneakers",
+      prop:"none", scene:"autumn porch", accent:"oversized glam glasses and a purple handbag",
+      extras:"luxury relaxed pose, autumn trees, only this preset gets the purse and glasses, no glitter unless selected"
+    }
+  },
+  {
+    id:"purple-cafe",
+    title:"Purple Cafe Girl",
+    desc:"Cafe doll with braids + pink drink",
+    dna:{
+      sceneType:"solo", ageGroup:"teen", gender:"girl", skinTone:"warm brown", eyeColor:"violet", expression:"playful smile",
+      hairStyle:"beaded braids", hairAccessory:"purple bows",
+      palette:"purple pink white", outfit:"purple-and-white sporty dress", shoes:"purple-and-white sneakers",
+      prop:"pink drink", scene:"cafe patio", accent:"long thick braided ponytails",
+      extras:"sweet cafe pose, no purse, no sunglasses, no glitter unless selected"
+    }
+  }
+];
+
+let currentPreset = null;
+let currentTab = "photo";
+
+function byId(id){ return document.getElementById(id); }
+function setStatus(msg, kind="ok"){
+  const box = byId("statusMsg");
+  box.className = "status " + kind;
+  box.textContent = msg;
+}
+function showTab(tab){
+  currentTab = tab;
+  byId("photoOutput").style.display = tab === "photo" ? "block" : "none";
+  byId("videoOutput").style.display = tab === "video" ? "block" : "none";
+  byId("photoTabBtn").classList.toggle("active", tab === "photo");
+  byId("videoTabBtn").classList.toggle("active", tab === "video");
+}
+function updateModeVisibility(){
+  const mode = byId("mode").value;
+  if(mode === "photo") showTab("photo");
+  else if(mode === "video") showTab("video");
+  else showTab(currentTab || "photo");
+}
+function renderPresets(){
+  const grid = byId("presetGrid");
+  grid.innerHTML = "";
+  PRESETS.forEach((p, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "preset";
+    btn.innerHTML = `<strong>${idx+1}. ${p.title}</strong><span>${p.desc}</span>`;
+    btn.addEventListener("click", ()=>applyPreset(p.id));
+    btn.id = "preset-" + p.id;
+    grid.appendChild(btn);
+  });
+}
+function clearManualTweaks(){
+  ["ageGroup","gender","skinTone","eyeColor","expression","hairStyle","hairAccessory","outfitOverride","shoesOverride","sceneOverride","propOverride","relationshipNote"].forEach(id => byId(id).value = "");
+  byId("accessoryGuard").value = "preset";
+  byId("effectLevel").value = "preset";
+  byId("customNotes").value = "";
+}
+function applyPreset(id){
+  currentPreset = PRESETS.find(p => p.id === id) || null;
+  document.querySelectorAll(".preset").forEach(el=>el.classList.remove("active"));
+  const active = byId("preset-" + id);
+  if(active) active.classList.add("active");
+  clearManualTweaks();
+  if(currentPreset){
+    byId("sceneType").value = currentPreset.dna.sceneType || "solo";
+    generate();
+    setStatus(`Loaded ${currentPreset.title}.`, "ok");
+  }
+}
+function randomPreset(){
+  const pick = PRESETS[Math.floor(Math.random() * PRESETS.length)];
+  applyPreset(pick.id);
+}
+function guardAccessories(text){
+  const guard = byId("accessoryGuard").value;
+  let out = text;
+  if(guard === "no-purse" || guard === "no-both"){
+    out += "\n\nDo not include any purse, handbag, tote, clutch, or bag.";
+  }
+  if(guard === "no-sunglasses" || guard === "no-both"){
+    out += "\n\nDo not include sunglasses or fashion glasses.";
+  }
+  return out;
+}
+function guardEffects(text){
+  const mode = byId("effectLevel").value;
+  if(mode === "none"){
+    return text + "\n\nDo not add glitter, sparkle, shimmer particles, or glossy floating effects.";
+  }
+  if(mode === "soft"){
+    return text + "\n\nUse only soft subtle sparkle, not a heavy glitter storm.";
+  }
+  if(mode === "bold"){
+    return text + "\n\nUse bold visible sparkle and glam shine.";
+  }
+  return text;
+}
+function valOrPreset(overrideId, presetValue){
+  const v = byId(overrideId).value.trim();
+  return v || presetValue || "";
+}
+function sceneTypeValue(){
+  return byId("sceneType").value || (currentPreset ? currentPreset.dna.sceneType : "solo");
+}
+function buildData(){
+  if(!currentPreset) return null;
+  const d = structuredClone(currentPreset.dna);
+  d.sceneType = sceneTypeValue();
+  d.ageGroup = valOrPreset("ageGroup", d.ageGroup);
+  d.gender = valOrPreset("gender", d.gender);
+  d.skinTone = valOrPreset("skinTone", d.skinTone);
+  d.eyeColor = valOrPreset("eyeColor", d.eyeColor);
+  d.expression = valOrPreset("expression", d.expression);
+  d.hairStyle = valOrPreset("hairStyle", d.hairStyle);
+  d.hairAccessory = valOrPreset("hairAccessory", d.hairAccessory);
+  d.outfit = valOrPreset("outfitOverride", d.outfit);
+  d.shoes = valOrPreset("shoesOverride", d.shoes);
+  d.scene = valOrPreset("sceneOverride", d.scene);
+  d.prop = valOrPreset("propOverride", d.prop);
+  d.relationship = byId("relationshipNote").value.trim();
+  d.notes = byId("customNotes").value.trim();
+  return d;
+}
+
+function singularGenderLabel(presetId){
+  if(presetId === "sour-kids") return "girl and boy";
+  if(presetId === "twin-keep-going") return "two girls";
+  if(presetId === "grandma-prayer") return "grandmother and child";
+  return "";
+}
+function buildCharacterBlocks(d){
+  const id = currentPreset ? currentPreset.id : "";
+  if(id === "sour-kids"){
+    return [
+      "Character 1 is a girl only. She has warm brown skin, oversized glossy brown eyes, a bright happy smile, and a feminine childlike presentation. Her hair is styled in afro puff ponytails with rainbow bows. She wears a white tee, a pink skirt, and sporty sneakers. She holds the sour candy bag or stands confidently beside it.",
+      "Character 2 is a boy only. He has warm brown skin, oversized glossy brown eyes, a grumpy or serious expression, and a masculine childlike presentation. His hair is short curly hair or a neat cropped curl shape. Do not give him bows unless explicitly requested. He wears a white tee, black joggers, and sporty sneakers. He crouches or poses with moody attitude.",
+      "Gender lock: Character 1 must be female only. Character 2 must be male only. Do not merge, swap, duplicate, or blur their gender styling."
+    ];
+  }
+  if(id === "twin-keep-going"){
+    return [
+      "Character 1 is a girl only. Character 2 is a girl only.",
+      "Make both girls clearly different in face, hairstyle details, expression, and pose while keeping the same sisterly style family.",
+      "One girl should lean into the teal styling lane and the other into the pink styling lane."
+    ];
+  }
+  if(id === "grandma-prayer"){
+    return [
+      "Character 1 is an elderly grandmother only.",
+      "Character 2 is a young girl only.",
+      "Do not make them the same age. Keep the grandmother visibly older and the child visibly younger."
+    ];
+  }
+  if(d.sceneType === "duo"){
+    return [
+      "This is a duo scene with two clearly separate characters.",
+      "Write the image as Character 1 and Character 2, with distinct faces, expressions, poses, and styling.",
+      "Do not duplicate their gender styling unless explicitly requested."
+    ];
+  }
+  if(d.sceneType === "trio"){
+    return [
+      "This is a trio scene with Character 1, Character 2, and Character 3.",
+      "Each character must have a distinct face, pose, hairstyle, and expression.",
+      "Do not clone the same face or styling across all three characters."
+    ];
+  }
+  if(d.sceneType === "family"){
+    return [
+      "This is a family scene with clearly separate characters.",
+      "Split the cast into individual character roles instead of blending them together.",
+      "Keep ages, poses, and styling visibly distinct across the family group."
+    ];
+  }
+  return [];
+}
+
+function photoPrompt(d){
+  let lines = [];
+  if(d.sceneType === "solo"){
+    lines.push(`Create an exaggerated chibi luxury doll illustration of a ${d.ageGroup} ${d.gender} with ${d.skinTone} skin, ${d.eyeColor} glossy doll eyes, and a ${d.expression} expression.`);
+  } else {
+    lines.push(`Create an exaggerated chibi luxury doll illustration for a ${d.sceneType} scene.`);
+  }
+
+  lines.push(`Preset family: ${currentPreset.title}. Keep the image in this exact style lane instead of drifting into a generic glam look.`);
+
+  buildCharacterBlocks(d).forEach(line => lines.push(line));
+
+  if(d.sceneType === "solo"){
+    lines.push(`Hair: ${d.hairStyle}${d.hairAccessory && d.hairAccessory !== "none" ? ` with ${d.hairAccessory}` : ""}.`);
+    lines.push(`Outfit: ${d.outfit}${d.shoes ? ` with ${d.shoes}` : ""}.`);
+  } else {
+    if(currentPreset && currentPreset.id === "sour-kids"){
+      lines.push("Do not make both children wear identical hair accessories. The girl may wear rainbow bows. The boy should keep a cleaner masculine hair look unless a specific bow styling is explicitly requested.");
+    } else {
+      lines.push(`Use ${d.outfit}${d.shoes ? ` with ${d.shoes}` : ""} as the coordinated outfit direction, but vary the details between the characters so they do not look cloned.`);
+      lines.push(`Use ${d.hairStyle}${d.hairAccessory && d.hairAccessory !== "none" ? ` with ${d.hairAccessory}` : ""} as the anchor hair direction only when it fits the specific character role.`);
+    }
+  }
+
+  lines.push(`Scene: ${d.scene}.`);
+
+  if(d.prop && d.prop !== "none") lines.push(`Main prop: ${d.prop}.`);
+
+  lines.push(`Color story: ${d.palette}.`);
+
+  if(d.accent) lines.push(`Accent details: ${d.accent}.`);
+
+  if(d.extras) lines.push(`Locked visual rules: ${d.extras}.`);
+
+  if(d.sceneType !== "solo"){
+    lines.push(`Group rule: make every character distinct, but coordinated inside the same preset family.${d.relationship ? ` Relationship note: ${d.relationship}.` : ""}`);
+  }
+
+  lines.push(`Do not add feathers. Do not add instrument props. Do not swap in a random purse or random sunglasses unless this preset explicitly includes them. Keep the background suitable for the subject matter.`);
+  lines.push(`Do not blend all characters into one averaged design. Do not duplicate the same face, same hairstyle, same expression, or same pose across the group unless the preset explicitly calls for it.`);
+
+  if(d.notes) lines.push(`Extra must-have notes: ${d.notes}`);
+
+  lines.push(`Render style: hyper-polished exaggerated chibi doll, oversized glossy eyes, dramatic lashes, clean lines, smooth 3D toy-like shading, strong preset identity, cohesive image design.`);
+
+  let prompt = lines.join("\n\n");
+  prompt = guardAccessories(prompt);
+  prompt = guardEffects(prompt);
+  return prompt;
+}
+function videoPrompt(d){
+  let lines = [];
+  lines.push(`Create a short-form AI video prompt based on the ${currentPreset.title} preset family.`);
+
+  if(d.sceneType === "solo"){
+    lines.push(`Character setup: ${d.ageGroup} ${d.gender}, ${d.skinTone} skin, ${d.eyeColor} eyes, ${d.hairStyle}${d.hairAccessory && d.hairAccessory !== "none" ? ` with ${d.hairAccessory}` : ""}, wearing ${d.outfit}${d.shoes ? ` with ${d.shoes}` : ""}.`);
+  } else {
+    lines.push(`Scene setup: ${d.sceneType} cast with separate character blocks.`);
+    buildCharacterBlocks(d).forEach(line => lines.push(line));
+    if(currentPreset && currentPreset.id === "sour-kids"){
+      lines.push("Character 1 animation should feel bright, cute, cheerful, and playful. Character 2 animation should feel moody, stubborn, and boyish.");
+    } else {
+      lines.push("Give each character their own movement, expression, and styling emphasis so the cast does not look duplicated.");
+    }
+  }
+
+  lines.push(`Scene setup: ${d.scene}${d.prop && d.prop !== "none" ? ` with ${d.prop}` : ""}. Palette: ${d.palette}.`);
+  if(d.accent) lines.push(`Accent details: ${d.accent}.`);
+  if(d.extras) lines.push(`Locked visual rules: ${d.extras}.`);
+  if(d.sceneType !== "solo" && d.relationship){
+    lines.push(`Relationship note: ${d.relationship}.`);
+  }
+  lines.push(`Camera direction: clear subject focus, strong beauty framing, preset-appropriate background, no feather effects, no instrument props, and no random purse or sunglasses unless the preset explicitly calls for them.`);
+  lines.push(`Animation feel: polished, cohesive, cute, expressive, visually striking, with the same exaggerated chibi glam style as the photo preset.`);
+  if(d.notes) lines.push(`Extra must-have notes: ${d.notes}`);
+
+  let prompt = lines.join("\n\n");
+  prompt = guardAccessories(prompt);
+  prompt = guardEffects(prompt);
+  return prompt;
+}
+function setOutput(id, text){ byId(id).value = text; }
+function generate(){
+  if(!currentPreset){
+    setStatus("Pick a preset first.", "warn");
+    return;
+  }
+  const d = buildData();
+  setOutput("photoOutput", photoPrompt(d));
+  setOutput("videoOutput", videoPrompt(d));
+  updateModeVisibility();
+  setStatus("Prompts generated.", "ok");
+}
+async function copyVisible(){
+  const id = currentTab === "photo" ? "photoOutput" : "videoOutput";
+  const text = byId(id).value.trim();
+  if(!text){
+    setStatus("Generate something first.", "warn");
+    return;
+  }
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    } else {
+      byId(id).focus();
+      byId(id).select();
+      document.execCommand("copy");
+    }
+    setStatus(`${currentTab === "photo" ? "Photo" : "Video"} prompt copied.`, "ok");
+  } catch(err){
+    console.error(err);
+    setStatus("Copy failed. Use Download TXT.", "err");
+  }
+}
+function downloadTxt(){
+  const photo = byId("photoOutput").value.trim();
+  const video = byId("videoOutput").value.trim();
+  if(!photo && !video){
+    setStatus("Generate something first.", "warn");
+    return;
+  }
+  const blob = new Blob([`PHOTO PROMPT\n\n${photo}\n\n-----------------\n\nVIDEO PROMPT\n\n${video}`], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "exaggerated_chibi_generator_v11_prompts.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setStatus("TXT downloaded.", "ok");
+}
+function clearAll(){
+  currentPreset = null;
+  document.querySelectorAll(".preset").forEach(el=>el.classList.remove("active"));
+  clearManualTweaks();
+  byId("sceneType").value = "solo";
+  byId("mode").value = "both";
+  byId("photoOutput").value = "";
+  byId("videoOutput").value = "";
+  currentTab = "photo";
+  updateModeVisibility();
+  setStatus("Cleared. Pick a preset.", "ok");
+}
+
+byId("generateBtn").addEventListener("click", generate);
+byId("randomPresetBtn").addEventListener("click", randomPreset);
+byId("clearBtn").addEventListener("click", clearAll);
+byId("copyBtn").addEventListener("click", copyVisible);
+byId("downloadBtn").addEventListener("click", downloadTxt);
+byId("photoTabBtn").addEventListener("click", ()=>{ currentTab="photo"; updateModeVisibility(); });
+byId("videoTabBtn").addEventListener("click", ()=>{ currentTab="video"; updateModeVisibility(); });
+byId("mode").addEventListener("change", updateModeVisibility);
+
+renderPresets();
+clearAll();
+</script>
+</body>
+</html>
